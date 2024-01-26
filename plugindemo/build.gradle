@@ -1,0 +1,85 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.joygin.plugindemo'
+    compileSdk rootProject.ext.compileSdk
+
+    defaultConfig {
+        applicationId "com.joygin.plugindemo"
+        minSdk 21
+        targetSdk rootProject.ext.targetSdk
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        debug {
+            keyAlias 'pluginkit'
+            keyPassword '123456'
+            storeFile file('../keystore.jks')
+            storePassword '123456'
+        }
+        release {
+            keyAlias 'pluginkit'
+            keyPassword '123456'
+            storeFile file('../keystore.jks')
+            storePassword '123456'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    compileOnly project(":pluginkit")
+}
+
+// 生成 apk 文件并复制到 app 工程的 assets 目录下
+tasks.register('generatePluginApk', Copy) {
+    dependsOn 'assembleRelease' // 可选，如果你希望总是在assemble后执行这个任务
+
+    // 目录可能需要根据你的项目结构调整
+    String apkDir = "${project.rootDir}/app/src/main/assets"
+
+    // 确保输出目录存在
+    doFirst {
+        file(apkDir).mkdirs()
+    }
+
+    from { // 使用闭包来延迟配置直到任务执行
+        "${project.buildDir}/outputs/apk/release/plugindemo-release.apk"
+    }
+    into(apkDir)
+
+    // 按照你的需求设置复制的具体规则，例如重命名等
+    rename { String fileName ->
+        // 这里可以修改文件名称，这里的实现只是一个占位符，你可能需要按照实际情况更改
+//        "copied-${fileName}"
+        "plugindemo.apk"
+    }
+}
